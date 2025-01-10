@@ -123,9 +123,12 @@ if len(st.session_state['gifts']) > 0:
 else:
     st.write("No gifts added yet.")
 
+# Checkbox to confirm clearing gifts
+clear_checkbox = st.checkbox("I confirm I want to clear all gifts data")
+
 # Button to clear gifts with confirmation
-if st.button("Clear Gifts Data"):
-    if st.confirm("Are you sure you want to clear all gift data? This action cannot be undone."):
+if clear_checkbox:
+    if st.button("Clear Gifts Data"):
         st.session_state['gifts'] = []
         st.success("Gifts data cleared!")
 
