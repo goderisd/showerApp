@@ -130,7 +130,9 @@ if st.button("Clear Gifts Data"):
         st.success("Gifts data cleared!")
 
 # Download gifts as CSV
-st.download_button("Download Gifts as CSV", df.to_csv(index=False), "wedding_gifts.csv", "text/csv")
+if len(st.session_state['gifts']) > 0:
+    df = pd.DataFrame(st.session_state['gifts'])
+    st.download_button("Download Gifts as CSV", df.to_csv(index=False), "wedding_gifts.csv", "text/csv")
 
 # Upload CSV
 uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
