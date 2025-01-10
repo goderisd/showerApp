@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 
+# Initialize session state for gifts
+if 'gifts' not in st.session_state:
+    st.session_state['gifts'] = []
+
 # Load the invitee data
 invitees_file = "invitees.csv"  # Replace with your actual file path
 invitees_df = pd.read_csv(invitees_file)
