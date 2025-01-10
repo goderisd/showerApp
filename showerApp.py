@@ -38,6 +38,34 @@ if not filtered_invitees.empty:
             'Address': selected_row[['Street Address 1', 'Street Address 2', 'City', 'State/Province', 'Zip/Postal Code', 'Country']].to_dict(),
             'RSVP': selected_row[['Wedding Day - RSVP', 'Wedding Day - Gift Received']].to_dict()
         }
+else:
+    st.sidebar.write("No results found. You can add the person manually below.")
+
+    # Form to add a new person manually
+    with st.sidebar.form(key='add_person_form'):
+        first_name = st.text_input("First Name")
+        last_name = st.text_input("Last Name")
+        street1 = st.text_input("Street Address 1")
+        street2 = st.text_input("Street Address 2", value="")
+        city = st.text_input("City")
+        state = st.text_input("State/Province")
+        zip_code = st.text_input("Zip/Postal Code")
+        country = st.text_input("Country")
+        add_person_button = st.form_submit_button(label='Add Person')
+
+        if add_person_button:
+            new_person = {
+                "First Name": first_name,
+                "Last Name": last_name,
+                "Street Address 1": street1,
+                "Street Address 2": street2,
+                "City": city,
+                "State/Province": state,
+                "Zip/Postal Code": zip_code,
+                "Country": country
+            }
+            invitees_df = invitees_df.append(new_person, ignore_index=True)
+            st.write("Person added successfully!")
 
 # Add new gift with selected invitee
 st.sidebar.header("Add New Gift")
@@ -55,13 +83,10 @@ with st.sidebar.form(key='gift_form'):
             "Gift": gift_item,
             "Value": value,
             "Date": date_received,
-            "Thank You Note": thank_you_note
+            "Thank You Note": thank_you_note,
+            "Address": st.session_state.get('selected_invitee', {}).get('Address', {})
         }
         st.session_state['gifts'].append(new_gift)
-
-        # Update invitee status
-        if 'selected_invitee' in st.session_state:
-            st.session_state['selected_invitee']['RSVP']['Wedding Day - Gift Received'] = True
 
 # Display gifts
 st.header("Wedding Gifts")
