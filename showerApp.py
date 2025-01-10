@@ -27,7 +27,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Initialize session state for gifts
+# Initialize session state for gifts if it doesn't exist
 if 'gifts' not in st.session_state:
     st.session_state['gifts'] = []
 
@@ -65,33 +65,34 @@ if not filtered_invitees.empty:
             'RSVP': selected_row[['Wedding Day - RSVP', 'Wedding Day - Gift Received']].to_dict()
         }
 else:
-    st.write("No results found. You can add the person manually below.")
+    st.write("No results found.")
 
-    # Form to add a new person manually on the main page
-    with st.form(key='add_person_form'):
-        first_name = st.text_input("First Name")
-        last_name = st.text_input("Last Name")
-        street1 = st.text_input("Street Address 1")
-        street2 = st.text_input("Street Address 2", value="")
-        city = st.text_input("City")
-        state = st.text_input("State/Province")
-        zip_code = st.text_input("Zip/Postal Code")
-        country = st.text_input("Country")
-        add_person_button = st.form_submit_button(label='Add Person')
+    # Button to reveal manual entry form
+    if st.button("Add Person Manually"):
+        with st.form(key='add_person_form'):
+            first_name = st.text_input("First Name")
+            last_name = st.text_input("Last Name")
+            street1 = st.text_input("Street Address 1")
+            street2 = st.text_input("Street Address 2", value="")
+            city = st.text_input("City")
+            state = st.text_input("State/Province")
+            zip_code = st.text_input("Zip/Postal Code")
+            country = st.text_input("Country")
+            add_person_button = st.form_submit_button(label='Add Person')
 
-        if add_person_button:
-            new_person = {
-                "First Name": first_name,
-                "Last Name": last_name,
-                "Street Address 1": street1,
-                "Street Address 2": street2,
-                "City": city,
-                "State/Province": state,
-                "Zip/Postal Code": zip_code,
-                "Country": country
-            }
-            invitees_df = invitees_df.append(new_person, ignore_index=True)
-            st.success("Person added successfully!")
+            if add_person_button:
+                new_person = {
+                    "First Name": first_name,
+                    "Last Name": last_name,
+                    "Street Address 1": street1,
+                    "Street Address 2": street2,
+                    "City": city,
+                    "State/Province": state,
+                    "Zip/Postal Code": zip_code,
+                    "Country": country
+                }
+                invitees_df = invitees_df.append(new_person, ignore_index=True)
+                st.success("Person added successfully!")
 
 # Add new gift with selected invitee
 st.header("Add New Gift")
@@ -116,8 +117,11 @@ with st.form(key='gift_form'):
 
 # Display gifts
 st.header("Wedding Gifts")
-df = pd.DataFrame(st.session_state['gifts'])
-st.dataframe(df)
+if len(st.session_state['gifts']) > 0:
+    df = pd.DataFrame(st.session_state['gifts'])
+    st.dataframe(df)
+else:
+    st.write("No gifts added yet.")
 
 # Button to clear gifts with confirmation
 if st.button("Clear Gifts Data"):
