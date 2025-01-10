@@ -1,6 +1,32 @@
 import streamlit as st
 import pandas as pd
 
+# Set page configuration
+st.set_page_config(page_title="Wedding Gift Tracker", page_icon="💒", layout="wide")
+
+# Add custom CSS for a festive theme
+st.markdown("""
+    <style>
+        .main {
+            background-color: #fff5f7;
+        }
+        h1, h2, h3, h4 {
+            color: #e91e63;
+        }
+        .sidebar .sidebar-content {
+            background-color: #fff0f3;
+        }
+        .stButton>button {
+            background-color: #e91e63;
+            color: white;
+            border-radius: 10px;
+        }
+        .stTextInput>div>div>input {
+            border-radius: 5px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Initialize session state for gifts
 if 'gifts' not in st.session_state:
     st.session_state['gifts'] = []
@@ -9,26 +35,26 @@ if 'gifts' not in st.session_state:
 invitees_file = "invitees.csv"  # Replace with your actual file path
 invitees_df = pd.read_csv(invitees_file)
 
-# Name search bar
+# Name search bar in the sidebar
 st.sidebar.header("Search Invitee")
 search_name = st.sidebar.text_input("Enter First or Last Name")
 filtered_invitees = invitees_df[
     invitees_df[['First Name', 'Last Name']].apply(lambda row: search_name.lower() in row.astype(str).str.lower().values, axis=1)
 ]
 
-# Display search results
-st.sidebar.write("Search Results:")
+# Display search results in the main page
+st.header("Search Results")
 if not filtered_invitees.empty:
-    st.sidebar.dataframe(filtered_invitees)
+    st.dataframe(filtered_invitees)
 
     # Select invitee from search results
-    selected_invitee = st.sidebar.selectbox(
+    selected_invitee = st.selectbox(
         "Select Invitee",
         options=filtered_invitees['First Name'] + " " + filtered_invitees['Last Name']
     )
 
     # Assign selected invitee as the giver
-    if st.sidebar.button("Assign to Gift Entry"):
+    if st.button("Assign to Gift Entry"):
         selected_row = filtered_invitees[
             (filtered_invitees['First Name'] + " " + filtered_invitees['Last Name']) == selected_invitee
         ].iloc[0]
@@ -39,10 +65,10 @@ if not filtered_invitees.empty:
             'RSVP': selected_row[['Wedding Day - RSVP', 'Wedding Day - Gift Received']].to_dict()
         }
 else:
-    st.sidebar.write("No results found. You can add the person manually below.")
+    st.write("No results found. You can add the person manually below.")
 
-    # Form to add a new person manually
-    with st.sidebar.form(key='add_person_form'):
+    # Form to add a new person manually on the main page
+    with st.form(key='add_person_form'):
         first_name = st.text_input("First Name")
         last_name = st.text_input("Last Name")
         street1 = st.text_input("Street Address 1")
@@ -65,11 +91,11 @@ else:
                 "Country": country
             }
             invitees_df = invitees_df.append(new_person, ignore_index=True)
-            st.write("Person added successfully!")
+            st.success("Person added successfully!")
 
 # Add new gift with selected invitee
-st.sidebar.header("Add New Gift")
-with st.sidebar.form(key='gift_form'):
+st.header("Add New Gift")
+with st.form(key='gift_form'):
     giver_name = st.text_input("Giver's Name", value=f"{st.session_state.get('selected_invitee', {}).get('First Name', '')} {st.session_state.get('selected_invitee', {}).get('Last Name', '')}")
     gift_item = st.text_input("Gift Item")
     value = st.number_input("Value", min_value=0.0, step=0.01)
@@ -92,6 +118,12 @@ with st.sidebar.form(key='gift_form'):
 st.header("Wedding Gifts")
 df = pd.DataFrame(st.session_state['gifts'])
 st.dataframe(df)
+
+# Button to clear gifts with confirmation
+if st.button("Clear Gifts Data"):
+    if st.confirm("Are you sure you want to clear all gift data? This action cannot be undone."):
+        st.session_state['gifts'] = []
+        st.success("Gifts data cleared!")
 
 # Download gifts as CSV
 st.download_button("Download Gifts as CSV", df.to_csv(index=False), "wedding_gifts.csv", "text/csv")
